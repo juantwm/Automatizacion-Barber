@@ -1,0 +1,46 @@
+networks:
+  barber-network:
+    driver: bridge
+
+volumes:
+  n8n_storage:
+  evolution_instances:
+
+services:
+  # --- EL CEREBRO: n8n ---
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: gepi_n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${NGROK_SUBDOMAIN:-custom}.ngrok-free.app
+    volumes:
+      - n8n_storage:/home/node/.n8n
+    networks:
+      - barber-network
+
+  # --- EL PUENTE: EVOLUTION API ---
+  evolution-api:
+    image: evoapicloud/evolution-api:latest
+    container_name: gepi_evolution_api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - API_VERSION=v2
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=${EVOLUTION_DB_URL}
+      - CACHE_PROVIDER=local
+      - AUTHENTICATION_TYPE=apikey
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks:
+      - barber-network
