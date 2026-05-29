@@ -1,0 +1,6 @@
+# Ignorar el archivo de credenciales locales (VITAL)
+.env
+
+# Ignorar archivos temporales o de configuración del sistema
+.DS_Store
+Thumbs.db
